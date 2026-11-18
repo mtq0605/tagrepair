@@ -501,3 +501,47 @@ lines; the summary lines carry `convertible`, `notScanned`, `cancelled`, `notSta
 Build: Windows, MSVC, CMake; `cmake -S . -B build -DFFMPEG_ROOT=<FFmpeg dev package>`, then build and `ctest`. The result
 is `build\bin\tagrepair.exe`; the build script copies the four FFmpeg DLLs from the package you supplied next to it. All
 user-visible strings are in `src/messages.h`, each written once in both languages.
+
+---
+
+## 安卓版(`android/`)
+
+同一套规则、同一个声明,纯 Java 写的安卓应用(包名 `com.omni.tagrepair`)。上面的声明一字不改,应用里「声明」按钮显示的就是它的原文;
+声明第七条说的 FFmpeg 只对 Windows 版成立:**安卓版不加载 FFmpeg**,读文件、FLAC 解码、另存时的 FLAC 编码都是本工具自己写的 Java 代码
+(`android/app/src/main/java/com/omni/tagrepair/core/`),源代码里没有别人的代码,也不依赖任何第三方库。
+
+**用法**:打开应用,点「选文件……」或「选文件夹……」(连子文件夹)。它先只读地检查、分类列出来,和 Windows 版拖放之后一样;
+三样事(原地修复 / WAV 另存为 FLAC / 16 bit 另存 24 bit)各有一个按钮,点了先说明这件事做什么,点「开始」才动手;随时可以点「取消」。
+所有文字都是中文一行、英文一行。也可以在别的应用里把音频文件「分享」给它,或者从 OmniAudio 的「设置 → 插件」打开它(插件接口:
+动作 `com.omni.audio.action.PLUGIN`,接口版本 1,文件放在 `EXTRA_STREAM`,可以不给)。
+
+**和 Windows 版一样的**:判断规则、要写的值、写进去的字节。同一个输入,修好的文件与 Windows 版逐字节相同 ——
+发布前拿合成测试文件、合法持有的真 MQA 专辑、以及 17 种标签坏法的变体(没有 PADDING、前面带 ID3v2、后面带 ID3v1、重复的键、两个注释块、
+没有注释块……)两边各修一遍逐字节核对过;FLAC 解码与 FFmpeg / 文件头里的 MD5 逐个样本核对过。
+
+**和 Windows 版不一样的**:
+- 只读 FLAC 和 WAV(别的格式说"安卓版只读 FLAC 和 WAV 文件")。WAV 里的普通标签只带 `LIST/INFO` 块里的(不读 `bext`、`id3 `)。
+- 另存出的新文件,音频帧是本工具自己的编码器编的,所以那部分字节与 Windows 版(FFmpeg 的编码器)不同;解出来的采样逐个相同,元数据块相同。
+- 系统给的文件(`content://`)不能"换入"。要整文件重写的,先在本应用自己的目录里写一个完整的新文件、从头核对(结构、标签、音频字节的
+  SHA-256、整轨解码的 MD5),再整个写回原文件、写回之后逐字节核对。写回之前先登记;写到一半进程被杀或断电,核对过的新版本还在,
+  下次打开应用时接着写完;原文件已经没有写权限的,让你把修好的那份另存出来。
+- 没有命令行选项(`--keep-backup`、`--encoder-tag`、`--accept-prefix` 这些),用默认的规则。
+- 不要任何权限:不联网、不收集任何数据;文件只经系统的文件选择器、分享或者 OmniAudio 给进来,读写授权由系统按次给。
+
+**构建**(JDK 17、Android SDK 36、Gradle 8.13):`cd android && gradle assembleRelease`。签名用的 `keystore.properties` 不在仓库里,
+没有它时出的是未签名的包。
+
+**测试**:应用里长按标题跑自检(合成信号,不碰你的文件);同一份核心代码也能在电脑上跑:`android/test/DeskTool.java`(`selftest`、`scan`、
+`fix`、`decode`、`copy24`、`wav`),`MakeVariants.java` 造标签坏了的变体,拿来和 Windows 版逐字节对照。
+
+### Android version, in English
+
+`android/` is a pure-Java Android app (package `com.omni.tagrepair`) with the same rules and the same notice, shown unaltered.
+Item 7 of the notice (FFmpeg) applies to the Windows version only: the Android version loads no FFmpeg; reading files, FLAC
+decoding and the FLAC encoding of the copies are this tool's own Java code, with no third-party code or libraries. For the same
+input, the repaired file is byte-for-byte identical to the one the Windows version writes (checked on synthetic files, a
+lawfully owned MQA album and 17 kinds of broken tags). Differences: FLAC and WAV only; WAV ordinary tags only from `LIST/INFO`;
+the audio frames of the copies come from its own encoder (samples and metadata identical, frame bytes differ); a file that needs
+a whole rewrite is rewritten and checked in the app's own storage, then written back over the original and compared byte by
+byte, with a journal that finishes the write-back after an interruption. It asks for no permissions, has no network access and
+collects no data. It can also be opened from OmniAudio (action `com.omni.audio.action.PLUGIN`, API 1, optional `EXTRA_STREAM`).

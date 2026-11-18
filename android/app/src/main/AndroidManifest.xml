@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- tagrepair 安卓版:不要任何权限(不联网、不读通讯录、不要存储权限)。文件只经系统的文件选择器、
+     或者别的应用(OmniAudio 的插件区、分享)给进来,系统按次给读写授权 -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:label="@string/app_name"
+        android:icon="@drawable/app_icon"
+        android:allowBackup="false"
+        android:largeHeap="true"
+        android:theme="@android:style/Theme.Material.NoActionBar">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|keyboard|navigation|uiMode|fontScale|density|locale|layoutDirection">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- OmniAudio 的插件接口:声明了这个动作的 Activity 就是插件;接口版本 1 -->
+            <intent-filter>
+                <action android:name="com.omni.audio.action.PLUGIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <!-- 在别的应用里"分享"音频文件给它 -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="audio/*" />
+            </intent-filter>
+            <meta-data android:name="com.omni.audio.plugin.api" android:value="1" />
+        </activity>
+    </application>
+</manifest>

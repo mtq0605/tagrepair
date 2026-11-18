@@ -1,0 +1,50 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.omni.tagrepair'
+    compileSdk 36
+
+    defaultConfig {
+        // 包名固定:OmniAudio 的插件区按这个名字认它(PluginHost.MQA_PKG),装的时候也核对这个名字
+        applicationId "com.omni.tagrepair"
+        minSdk 24
+        targetSdk 36
+        versionCode 1
+        versionName "1.1.0"
+    }
+
+    // 正式签名:密钥的路径与密码在 keystore.properties(不进 git)。
+    // 没有这个文件时 release 不签名
+    def ksFile = rootProject.file("keystore.properties")
+    def ks = new Properties()
+    if (ksFile.exists()) { ksFile.withInputStream { ks.load(it) } }
+    signingConfigs {
+        if (ksFile.exists()) {
+            release {
+                storeFile file(ks["storeFile"])
+                storePassword ks["storePassword"]
+                keyAlias ks["keyAlias"]
+                keyPassword ks["keyPassword"]
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            debuggable false
+            if (ksFile.exists()) signingConfig signingConfigs.release
+        }
+    }
+}
+
+// 不用任何第三方库
+dependencies {
+}

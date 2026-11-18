@@ -1,0 +1,4 @@
+// tagrepair 安卓版。AGP 8.13 + Gradle 8.13 + JDK 17。不用任何第三方库(dependencies 是空的)
+plugins {
+    id 'com.android.application' version '8.13.0' apply false
+}

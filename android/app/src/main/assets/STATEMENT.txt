@@ -1,0 +1,128 @@
+NOTICE
+
+Purpose
+This tool restores the identifying tags of FLAC files that are already MQA-encoded but have lost those tags,
+typically after being downloaded, re-saved or edited with a tag editor. For such audio stored as a WAV file, and for
+16-bit files when you choose so, it can save a FLAC copy that carries the tags. It does nothing else.
+It was developed by an individual for noncommercial purposes and implements only the most basic tag-repair function.
+
+1. How a file is identified
+   The tool examines only the file itself. It searches the audio data for the MQA synchronization marker and reads
+   the original sample rate stored with it. If no marker is found, the file is left untouched.
+
+2. What is written
+   Three plain-text tags, with no signature and no encryption:
+     ENCODER            = MQAEncode v1.1, tag repair (unsigned)
+     MQAENCODER         = MQAEncode v1.1, tag repair (unsigned)
+     ORIGINALSAMPLERATE = the original sample rate read from the stream, for example 352800
+   A file that already carries an acceptable encoder value in either of the first two tags, together with the
+   original sample rate, is treated as complete and is not touched.
+   Otherwise, acceptable values already present in the file are kept; only missing or unacceptable values are written.
+   If the file has no comment block yet, one is created and labeled "tagrepair".
+   The value begins with "MQAEncode" because some devices recognize a file only if it does. The words "tag repair"
+   and "(unsigned)" make it clear that the value was not written by an official encoder.
+
+3. The audio is never altered
+   Only the tag (metadata) area of the FLAC file is rewritten. The audio data remains byte-for-byte identical. This
+   is verified before and after writing, and the original file is restored if any difference is found.
+   For WAV files, and for 16-bit files when you choose so, the tool does not change the original file at all. It
+   writes a new FLAC file next to it that contains exactly the same sample values (16-bit samples may be stored in
+   24-bit words with zero low bits) together with the tags and the file's existing ordinary tags, and it keeps the
+   new file only after verifying that it decodes to exactly the same samples.
+
+4. It cannot turn ordinary audio into MQA
+   The tool does not create MQA-encoded audio. It does not create, alter or circumvent any authentication data in
+   the stream, and it contains no MQA decoding (unfolding) code.
+
+5. Unofficial tool; no MQA authentication
+   This tool is not affiliated with, authorized by or endorsed by the owner of MQA. "MQA" is a trademark of its
+   owner and is used here solely to identify the file format. Whether a device or program recognizes or displays a
+   file as MQA is determined by that device or program. This tool provides no authentication and gives no assurance
+   of any.
+   This tool serves only to restore simple identifying tags that have been lost (tag repair). It does not constitute
+   a statement or guarantee regarding any authentication status.
+
+6. No reverse engineering by the authors
+   The authors of this tool have not reverse-engineered or disassembled any MQA encoder or decoder, nor examined the
+   internals of one. Their own work is limited to reading and analyzing the structure that can be observed directly
+   in the files themselves. All source code of this tool was written by its authors. The location of the
+   synchronization marker, the layout of the record that follows it, its checksum rule and the sample-rate codes are
+   taken from publicly available descriptions and have been verified, file by file, against files the authors
+   lawfully hold.
+
+7. Run-time libraries
+   FFmpeg shared libraries (LGPL) are loaded at run time. They are not part of this tool.
+
+8. License
+   PolyForm Noncommercial License 1.0.0. In short: anyone may use, modify and share this tool free of charge for
+   noncommercial purposes; it may not be used for any commercial purpose and may not be sold. This sentence is a
+   summary only. The LICENSE file contains the full terms and is the governing text.
+
+9. Your responsibility; disclaimer
+   Use this tool only on files you lawfully own, and ensure that your use complies with the laws that apply to you.
+   The tool is provided "as is", without warranty of any kind, express or implied.
+   Anyone who misuses the tool or its code, for example to infringe the rights of others or as a starting point for
+   reverse-engineering third-party technology, bears sole responsibility for the consequences. The authors accept
+   no liability.
+
+This notice states facts and conditions of use. It is not legal advice.
+
+
+------------------------------------------------------------------------------------------
+
+声明
+
+这个工具是做什么的
+有些 FLAC 文件本身是 MQA 编码,但在下载、转存或者用软件改标签的时候,把用来识别它的标签弄丢了。
+这个工具把丢掉的标签补回去。同样情况的 WAV 文件,以及在你选择时 16 bit 的文件,它可以在旁边另存一个带标签的 FLAC。别的事它不做。
+本工具是个人出于非商业目的开发的,只实现了最基本的标签修复功能。
+
+一、怎么判断一个文件
+   只看文件本身:在音频数据里找 MQA 的同步标记,找到了,再读出和它存在一起的原始采样率。
+   找不到同步标记的文件,一个字节都不会动。
+
+二、写进去的是什么
+   三个纯文字的标签,没有签名,也没有加密:
+     ENCODER            = MQAEncode v1.1, tag repair (unsigned)
+     MQAENCODER         = MQAEncode v1.1, tag repair (unsigned)
+     ORIGINALSAMPLERATE = 从码流里读到的原始采样率,比如 352800
+   文件里已经有合格的编码器值(前两个标签里有一个就行)和原始采样率的,算标签完整,这个文件不动。
+   其余情况下,原来就有、而且合格的值不动,只补缺的、换掉不合格的。
+   文件里原来没有标签区的话,会新建一个,并标注为 tagrepair。
+   值用 "MQAEncode" 开头,是因为有的设备只认这个开头。
+   后面写上 "tag repair" 和 "(unsigned)",是为了不让人把它当成官方编码器写的值。
+
+三、音频不会被改动
+   只重写 FLAC 文件里放标签(元数据)的那一段,音频数据一个字节都不变。
+   写之前、写之后各核对一遍,对不上就把文件恢复成原样。
+   对 WAV 文件,以及在你选择时对 16 bit 的文件,这个工具完全不改原文件,而是在旁边另存一个新的 FLAC 文件:
+   里面的采样值和原文件一模一样(16 bit 的可以放进 24 bit 的格子里,低 8 位补零),再加上标签和原文件里已有的普通标签;
+   新文件要解码核对、采样值与原文件完全一致才会留下。
+
+四、不能把普通音频变成 MQA
+   这个工具不生成 MQA 编码,不生成、不修改、也不绕过码流里的任何认证数据,里面也没有 MQA 解码(展开)的代码。
+
+五、不是官方工具,不保证任何 MQA 认证
+   这个工具和 MQA 的权利人没有任何关系,没有得到对方的授权或认可。
+   "MQA" 是其权利人的商标,这里只是用来称呼这种文件格式。
+   设备或软件认不认、显不显示成 MQA,由它们自己决定。这个工具不提供任何认证,也不做任何保证。
+   本工具仅用于恢复已丢失的简单识别标签(tag repair),不构成对任何认证状态的声明或保证。
+
+六、作者没有做过逆向工程
+   这个工具的作者没有对任何 MQA 编码器或解码器做过逆向、反汇编,也没有研究过它们的内部。
+   我们自己做的只是读取和分析文件本身可以直接观察到的结构。这个工具的源代码全部由作者自己编写。
+   同步标记的位置、它后面那条记录的排布、校验规则和采样率的码取自公开的资料,并在我们合法持有的文件上逐个核对过。
+
+七、运行时用到的库
+   运行时会加载 FFmpeg 的动态库(LGPL),它们不属于这个工具。
+
+八、许可
+   PolyForm Noncommercial License 1.0.0。简单说:任何人都可以为非商业目的免费使用、修改、转发;不能用于任何商业目的,也不能出售。
+   这句话只是概括,完整条款以 LICENSE 文件为准。
+
+九、使用者的责任与免责
+   请只用它处理你自己合法拥有的文件,并自己确认这样做在你所在的地方是合法的。
+   这个工具按"现状"提供,不附带任何明示或暗示的保证。
+   任何人滥用这个工具或它的代码(比如拿去侵犯别人的权利,或者以它为起点去逆向别人的技术),后果由他自己承担,作者不承担责任。
+
+本声明只说明事实和使用条件,不是法律意见。
